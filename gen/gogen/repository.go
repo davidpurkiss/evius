@@ -7,8 +7,9 @@ type Repository struct {
 }
 
 // CreatePackage creates a new package in the go repository
-func (repository Repository) CreatePackage(name string) {
-
+func (repository Repository) CreatePackage(name string) Repository {
+	var repo Repository
+	return repo
 }
 
 // RemovePackage removes an existing package from the go repository
