@@ -6,10 +6,28 @@ import (
 	"testing"
 )
 
-func TestCreateWorkspace(t *testing.T) {
+func getWorkspacePath() string {
+	return path.Join(os.Getenv("GOPATH"), "src")
+}
 
-	workspacePath := path.Join(os.Getenv("GOPATH"), "src", "test")
-	workspace := Workspace{name: "Test", path: workspacePath}
+func TestCreateRepo(t *testing.T) {
 
-	workspace.CreateWorkspace()
+	workspace := Workspace{name: "Test", path: getWorkspacePath()}
+
+	_, error := workspace.CreateRepository("test")
+
+	if error != nil {
+		t.Error(error)
+	}
+}
+
+func TestRemoveRepo(t *testing.T) {
+
+	workspace := Workspace{name: "Test", path: getWorkspacePath()}
+
+	error := workspace.RemoveRepository("test")
+
+	if error != nil {
+		t.Error(error)
+	}
 }

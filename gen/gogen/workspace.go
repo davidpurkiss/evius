@@ -25,8 +25,10 @@ func (workspace Workspace) CreateRepository(name string) (Repository, error) {
 }
 
 // RemoveRepository removes an existing repository from the go workspace
-func (workspace Workspace) RemoveRepository(name string) {
+func (workspace Workspace) RemoveRepository(name string) error {
 
+	repoPath := path.Join(workspace.path, name)
+	return os.Remove(repoPath)
 }
 
 // RenameRepository renames an existing repository in a go workspace
