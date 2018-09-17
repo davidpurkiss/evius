@@ -1,6 +1,7 @@
 package gogen
 
 import (
+	"fmt"
 	"os"
 	"path"
 )
@@ -20,7 +21,11 @@ func (workspace Workspace) CreateWorkspace() (Workspace, error) {
 // CreateRepository creates a new repository in the go workspace
 func (workspace Workspace) CreateRepository(name string) (Repository, error) {
 
-	repo := Repository{name: name, path: path.Join(workspace.path, name)}
+	repoPath := path.Join(workspace.path, name)
+	if directoryExists(repoPath) {
+		return Repository{}, fmt.Errorf("The repo '%s' already exists", name)
+	}
+	repo := Repository{name: name, path: repoPath}
 	return repo, os.MkdirAll(repo.path, os.ModePerm)
 }
 
@@ -28,10 +33,21 @@ func (workspace Workspace) CreateRepository(name string) (Repository, error) {
 func (workspace Workspace) RemoveRepository(name string) error {
 
 	repoPath := path.Join(workspace.path, name)
+	if directoryExists(repoPath) {
+		return fmt.Errorf("The repo '%s' does not exist", name)
+	}
 	return os.Remove(repoPath)
 }
 
 // RenameRepository renames an existing repository in a go workspace
 func (workspace Workspace) RenameRepository(oldName string, newName string) {
 
+}
+
+func directoryExists(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	} else {
+		return true
+	}
 }
