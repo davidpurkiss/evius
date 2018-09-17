@@ -33,7 +33,7 @@ func (workspace Workspace) CreateRepository(name string) (Repository, error) {
 func (workspace Workspace) RemoveRepository(name string) error {
 
 	repoPath := path.Join(workspace.path, name)
-	if directoryExists(repoPath) {
+	if !directoryExists(repoPath) {
 		return fmt.Errorf("The repo '%s' does not exist", name)
 	}
 	return os.Remove(repoPath)
