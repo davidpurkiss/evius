@@ -1,8 +1,8 @@
 package gogen
 
 import (
+	"evius/util"
 	"fmt"
-	"os"
 	"path"
 )
 
@@ -15,28 +15,28 @@ type Workspace struct {
 // CreateWorkspace creates a new go workspace
 func (workspace Workspace) CreateWorkspace() (Workspace, error) {
 
-	return workspace, os.MkdirAll(workspace.path, os.ModePerm)
+	return workspace, directory.Create(workspace.path)
 }
 
 // CreateRepository creates a new repository in the go workspace
 func (workspace Workspace) CreateRepository(name string) (Repository, error) {
 
 	repoPath := path.Join(workspace.path, name)
-	if directoryExists(repoPath) {
+	if directory.Exists(repoPath) {
 		return Repository{}, fmt.Errorf("The repo '%s' already exists", name)
 	}
 	repo := Repository{name: name, path: repoPath}
-	return repo, os.MkdirAll(repo.path, os.ModePerm)
+	return repo, directory.Create(repo.path)
 }
 
 // RemoveRepository removes an existing repository from the go workspace
 func (workspace Workspace) RemoveRepository(name string) error {
 
 	repoPath := path.Join(workspace.path, name)
-	if !directoryExists(repoPath) {
+	if !directory.Exists(repoPath) {
 		return fmt.Errorf("The repo '%s' does not exist", name)
 	}
-	return os.Remove(repoPath)
+	return directory.Remove(repoPath)
 }
 
 // RenameRepository renames an existing repository in a go workspace
@@ -45,10 +45,10 @@ func (workspace Workspace) RenameRepository(oldName string, newName string) (Rep
 	repo := Repository{name: oldName, path: repoPath}
 	newRepoPath := path.Join(workspace.path, newName)
 
-	if directoryExists(newRepoPath) {
+	if directory.Exists(newRepoPath) {
 		return repo, fmt.Errorf("The repo '%s' already exists", newName)
 	}
-	err := os.Rename(repoPath, newRepoPath)
+	err := directory.Rename(repoPath, newRepoPath)
 
 	if err == nil {
 		repo.name = newName
@@ -56,12 +56,4 @@ func (workspace Workspace) RenameRepository(oldName string, newName string) (Rep
 	}
 
 	return repo, err
-}
-
-func directoryExists(path string) bool {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return false
-	} else {
-		return true
-	}
 }
