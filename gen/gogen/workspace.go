@@ -40,8 +40,22 @@ func (workspace Workspace) RemoveRepository(name string) error {
 }
 
 // RenameRepository renames an existing repository in a go workspace
-func (workspace Workspace) RenameRepository(oldName string, newName string) {
+func (workspace Workspace) RenameRepository(oldName string, newName string) (Repository, error) {
+	repoPath := path.Join(workspace.path, oldName)
+	repo := Repository{name: oldName, path: repoPath}
+	newRepoPath := path.Join(workspace.path, newName)
 
+	if directoryExists(newRepoPath) {
+		return repo, fmt.Errorf("The repo '%s' already exists", newName)
+	}
+	err := os.Rename(repoPath, newRepoPath)
+
+	if err == nil {
+		repo.name = newName
+		repo.path = newRepoPath
+	}
+
+	return repo, err
 }
 
 func directoryExists(path string) bool {
