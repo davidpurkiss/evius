@@ -4,19 +4,26 @@ package gogen
 type Package struct {
 	name string
 	path string
+	//_package ast.Package
 }
 
-// CreateItem creates a new item
-func CreateItem(name string) (Item, error) {
-
+func NewPackage(name string, path string) *Package {
+	packg := Package{name, path}
+	//packg._package = ast.NewPackage()
+	return &packg
 }
 
-// RemoveItem removes an existing item
-func RemoveItem(name string) error {
+// // CreateItem creates a new item
+// func CreateItem(name string) (Item, error) {
 
-}
+// }
 
-// RenameItem renames an existing item
-func RenameItem(oldName string, newName string) (Item, error) {
+// // RemoveItem removes an existing item
+// func RemoveItem(name string) error {
 
-}
+// }
+
+// // RenameItem renames an existing item
+// func RenameItem(oldName string, newName string) (Item, error) {
+
+// }
