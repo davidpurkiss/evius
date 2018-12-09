@@ -12,18 +12,19 @@ type Repository struct {
 	path string
 }
 
-// CreatePackage creates a new package in the go repository
+// CreatePackage creates a new package in a go repository
 func (repository Repository) CreatePackage(name string) (*Package, error) {
 	packagePath := path.Join(repository.path, name)
 	if directory.Exists(packagePath) {
 		return &Package{}, fmt.Errorf("The package '%s' already exists", name)
 	}
-	pckg := NewPackage(name, packagePath)
+	pckg, _ := NewPackage(packagePath)
 	return pckg, directory.Create(pckg.path)
 }
 
+// OpenPackage opens an existing package in a go repository
 func (repository Repository) OpenPackage(path string) (*Package, error) {
-	pckg := NewPackage(path, path)
+	pckg, _ := NewPackage(path)
 	return pckg, directory.Create(pckg.path)
 }
 
