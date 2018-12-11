@@ -12,6 +12,7 @@ import (
 type Package struct {
 	name     string
 	path     string
+	files    []*File
 	_package *ast.Package
 }
 
@@ -28,7 +29,15 @@ func NewPackage(packagePath string) (*Package, error) {
 		return nil, err
 	}
 
-	return &Package{name, packagePath, pkgs[name]}, nil
+	pkg := pkgs[name]
+
+	files := make([]*File, 0)
+
+	for path, f := range pkg.Files {
+		files = append(files, NewFile(path, f))
+	}
+
+	return &Package{name, packagePath, files, pkg}, nil
 }
 
 // // CreateItem creates a new item
