@@ -1,6 +1,8 @@
 package gogen
 
 import (
+	"evius/util"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -16,8 +18,8 @@ type Package struct {
 	_package *ast.Package
 }
 
-// NewPackage initializes a new package structure from a directory
-func NewPackage(packagePath string) (*Package, error) {
+// OpenPackage initializes a new package structure from a directory
+func OpenPackage(packagePath string) (*Package, error) {
 
 	absolutePath, _ := filepath.Abs(packagePath)
 	_, name := path.Split(absolutePath)
@@ -34,16 +36,21 @@ func NewPackage(packagePath string) (*Package, error) {
 	files := make([]*File, 0)
 
 	for path, f := range pkg.Files {
-		files = append(files, NewFile(path, f))
+		files = append(files, OpenFile(path, f))
 	}
 
 	return &Package{name, packagePath, files, pkg}, nil
 }
 
-// // CreateItem creates a new item
-// func CreateItem(name string) (Item, error) {
+// CreateFile creates a new file
+func (pkg Package) CreateFile(name string) (*File, error) {
+	filePath := path.Join(pkg.path, name)
+	if directory.Exists(filePath) {
+		return &File{}, fmt.Errorf("The file '%s' already exists", name)
+	}
 
-// }
+	return nil, nil
+}
 
 // // RemoveItem removes an existing item
 // func RemoveItem(name string) error {

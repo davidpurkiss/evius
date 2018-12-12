@@ -18,13 +18,13 @@ func (repository Repository) CreatePackage(name string) (*Package, error) {
 	if directory.Exists(packagePath) {
 		return &Package{}, fmt.Errorf("The package '%s' already exists", name)
 	}
-	pckg, _ := NewPackage(packagePath)
+	pckg, _ := OpenPackage(packagePath)
 	return pckg, directory.Create(pckg.path)
 }
 
 // OpenPackage opens an existing package in a go repository
 func (repository Repository) OpenPackage(path string) (*Package, error) {
-	pckg, _ := NewPackage(path)
+	pckg, _ := OpenPackage(path)
 	return pckg, directory.Create(pckg.path)
 }
 

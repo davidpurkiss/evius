@@ -3,7 +3,7 @@ package gogen
 import "testing"
 
 func TestOpenPackage(t *testing.T) {
-	pkg, _ := NewPackage("../gogen")
+	pkg, _ := OpenPackage("../gogen")
 
 	t.Log(pkg.name)
 }

@@ -11,8 +11,8 @@ type File struct {
 	_file *ast.File
 }
 
-// NewFile initializes a new file from a ast.File instance
-func NewFile(path string, astFile *ast.File) *File {
+// OpenFile initializes a new file from a ast.File instance
+func OpenFile(path string, astFile *ast.File) *File {
 
 	return &File{astFile.Name.String(), path, astFile}
 }
