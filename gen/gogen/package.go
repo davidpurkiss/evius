@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"go/ast"
 	"go/parser"
+	"go/printer"
 	"go/token"
+	"log"
+	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 // Package defines the attributes of a go package
@@ -16,6 +20,7 @@ type Package struct {
 	path     string
 	files    []*File
 	_package *ast.Package
+	_fset    *token.FileSet
 }
 
 // OpenPackage initializes a new package structure from a directory
@@ -39,7 +44,7 @@ func OpenPackage(packagePath string) (*Package, error) {
 		files = append(files, OpenFile(path, f))
 	}
 
-	return &Package{name, packagePath, files, pkg}, nil
+	return &Package{name, packagePath, files, pkg, fset}, nil
 }
 
 // CreateFile creates a new file
@@ -49,7 +54,22 @@ func (pkg Package) CreateFile(name string) (*File, error) {
 		return &File{}, fmt.Errorf("The file '%s' already exists", name)
 	}
 
-	return nil, nil
+	newFile := &ast.File{&ast.CommentGroup{}, pkg._package.Pos(), ast.NewIdent(name), []ast.Decl{}, ast.NewScope(pkg._package.Scope), []*ast.ImportSpec{}, nil, []*ast.CommentGroup{}}
+
+	pkg._package.Files[name] = newFile
+
+	strs := []string{}
+	strs = append(strs, name)
+	strs = append(strs, ".go")
+
+	f, _ := os.Create(strings.Join(strs, ""))
+	defer f.Close()
+
+	if err := printer.Fprint(f, pkg._fset, newFile); err != nil {
+		log.Fatal(err)
+	}
+
+	return &File{name, filePath, newFile}, nil
 }
 
 // // RemoveItem removes an existing item
