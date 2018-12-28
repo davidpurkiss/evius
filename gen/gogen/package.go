@@ -7,7 +7,6 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -40,8 +39,11 @@ func OpenPackage(packagePath string) (*Package, error) {
 
 	files := make([]*File, 0)
 
-	for path, f := range pkg.Files {
-		files = append(files, OpenFile(path, f))
+	if pkg != nil {
+
+		for path, f := range pkg.Files {
+			files = append(files, OpenFile(path, f))
+		}
 	}
 
 	return &Package{name, packagePath, files, pkg, fset}, nil
@@ -49,27 +51,50 @@ func OpenPackage(packagePath string) (*Package, error) {
 
 // CreateFile creates a new file
 func (pkg Package) CreateFile(name string) (*File, error) {
-	filePath := path.Join(pkg.path, name)
-	if directory.Exists(filePath) {
-		return &File{}, fmt.Errorf("The file '%s' already exists", name)
-	}
 
-	newFile := &ast.File{&ast.CommentGroup{}, pkg._package.Pos(), ast.NewIdent(name), []ast.Decl{}, ast.NewScope(pkg._package.Scope), []*ast.ImportSpec{}, nil, []*ast.CommentGroup{}}
-
-	pkg._package.Files[name] = newFile
+	absolutePackagePath, _ := filepath.Abs(pkg.path)
 
 	strs := []string{}
 	strs = append(strs, name)
 	strs = append(strs, ".go")
 
-	f, _ := os.Create(strings.Join(strs, ""))
-	defer f.Close()
+	filePath := path.Join(absolutePackagePath, strings.Join(strs, ""))
 
-	if err := printer.Fprint(f, pkg._fset, newFile); err != nil {
-		log.Fatal(err)
+	if directory.Exists(filePath) {
+		return &File{}, fmt.Errorf("The file '%s' already exists", name)
 	}
 
-	return &File{name, filePath, newFile}, nil
+	newAstFile := &ast.File{Doc: &ast.CommentGroup{}, Package: 0, Name: ast.NewIdent(pkg.name), Decls: []ast.Decl{}, Scope: nil, Imports: []*ast.ImportSpec{}, Comments: []*ast.CommentGroup{}}
+
+	f, _ := os.Create(filePath)
+	if err := printer.Fprint(f, pkg._fset, newAstFile); err != nil {
+		return nil, err
+	}
+	f.Close()
+
+	var newFile *File
+
+	if pkg._package == nil {
+		nPkg, err := OpenPackage(pkg.path)
+		if err != nil {
+			return nil, err
+		}
+		pkg._package = nPkg._package
+		pkg._fset = nPkg._fset
+		pkg.files = nPkg.files
+
+		for _, f := range pkg.files {
+			if f.name == name {
+				newFile = f
+			}
+		}
+	} else {
+		pkg._package.Files[name] = newAstFile
+		newFile = &File{name, filePath, newAstFile}
+		pkg.files = append(pkg.files, newFile)
+	}
+
+	return newFile, nil
 }
 
 // // RemoveItem removes an existing item
