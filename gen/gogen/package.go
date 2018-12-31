@@ -90,7 +90,7 @@ func (pkg Package) CreateFile(name string) (*File, error) {
 		}
 	} else {
 		pkg._package.Files[name] = newAstFile
-		newFile = &File{name, filePath, newAstFile}
+		newFile = &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), newAstFile}
 		pkg.files = append(pkg.files, newFile)
 	}
 
