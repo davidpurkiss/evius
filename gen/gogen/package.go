@@ -35,22 +35,26 @@ func OpenPackage(packagePath string) (*Package, error) {
 		return nil, err
 	}
 
-	pkg := pkgs[name]
+	astPackage := pkgs[name]
 
 	files := make([]*File, 0)
 
-	if pkg != nil {
+	pkg := &Package{name, packagePath, files, astPackage, fset}
 
-		for path, f := range pkg.Files {
-			files = append(files, OpenFile(path, f))
+	if astPackage != nil {
+
+		for path, f := range astPackage.Files {
+			files = append(files, OpenFile(path, pkg, f))
 		}
 	}
 
-	return &Package{name, packagePath, files, pkg, fset}, nil
+	pkg.files = files
+
+	return pkg, nil
 }
 
 // CreateFile creates a new file
-func (pkg Package) CreateFile(name string) (*File, error) {
+func (pkg *Package) CreateFile(name string) (*File, error) {
 
 	absolutePackagePath, _ := filepath.Abs(pkg.path)
 
@@ -90,7 +94,7 @@ func (pkg Package) CreateFile(name string) (*File, error) {
 		}
 	} else {
 		pkg._package.Files[name] = newAstFile
-		newFile = &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), newAstFile}
+		newFile = &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), pkg, newAstFile}
 		pkg.files = append(pkg.files, newFile)
 	}
 
