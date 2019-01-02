@@ -3,7 +3,6 @@ package gogen
 import (
 	"evius/util/directory"
 	"evius/util/test"
-	"path"
 	"testing"
 )
 
@@ -27,67 +26,76 @@ func TestCreatePackage(t *testing.T) {
 
 	setupRepositoryTest(t)
 
-	workspace := Workspace{name: "Test", path: getWorkspaceTestPath()}
+	workspace := Workspace{name: "Test", path: getRepositoryTestPath()}
+	repo, err := workspace.CreateRepository("test-repo")
 
-	repo, err := workspace.CreateRepository("test")
+	test.CheckError(err, t)
 
-	if err != nil {
-		t.Error(err)
-	}
+	pkg, err := repo.CreatePackage("test-package")
 
-	if !directory.Exists(repo.path) {
+	test.CheckError(err, t)
+
+	if !directory.Exists(pkg.path) {
 		t.Fail()
 	}
 
-	teardownWorkspaceTest(t)
+	teardownRepositoryTest(t)
 }
 
-func TestRemoveRepo(t *testing.T) {
+func TestRemovePackage(t *testing.T) {
 
-	setupWorkspaceTest(t)
+	setupRepositoryTest(t)
 
-	workspace := Workspace{name: "Test", path: getWorkspaceTestPath()}
+	workspace := Workspace{name: "Test", path: getRepositoryTestPath()}
+	repo, err := workspace.CreateRepository("test-repo")
+	test.CheckError(err, t)
 
-	repo, err := workspace.CreateRepository("test")
+	pkg, err := repo.CreatePackage("test-package")
 
-	if err != nil {
-		t.Error(err)
-	}
+	test.CheckError(err, t)
 
-	err = workspace.RemoveRepository("test")
+	test.CheckError(repo.RemovePackage(pkg.name), t)
 
-	if err != nil {
-		t.Error(err)
-	}
-
-	if directory.Exists(repo.path) {
+	if directory.Exists(pkg.path) {
 		t.Fail()
 	}
 
-	teardownWorkspaceTest(t)
+	teardownRepositoryTest(t)
 }
 
-func TestRenameRepo(t *testing.T) {
+func TestRenamePackage(t *testing.T) {
 
-	setupWorkspaceTest(t)
+	setupRepositoryTest(t)
 
-	workspace := Workspace{name: "Test", path: getWorkspaceTestPath()}
+	workspace := Workspace{name: "Test", path: getRepositoryTestPath()}
+	repo, err := workspace.CreateRepository("test-repo")
+	test.CheckError(err, t)
 
-	_, err := workspace.CreateRepository("test")
+	pkg, err := repo.CreatePackage("test-package")
+	test.CheckError(err, t)
 
-	repo, err := workspace.RenameRepository("test", "test2")
+	repo.RenamePackage(pkg.name, "test-package-renamed")
 
-	if err != nil {
-		t.Error(err)
-	}
-
-	if !directory.Exists(repo.path) {
+	if directory.Exists(pkg.name) {
 		t.Fail()
 	}
 
-	if directory.Exists(path.Join(getWorkspaceTestPath(), "test")) {
+	if directory.Exists("test-package") {
 		t.Fail()
 	}
 
-	teardownWorkspaceTest(t)
+	teardownRepositoryTest(t)
+}
+
+func TestOpenPackage(t *testing.T) {
+
+	workspace := Workspace{name: "Test", path: test.GetTestDataPath()}
+	repo, err := workspace.OpenRepository(getRepositoryTestName())
+
+	test.CheckError(err, t)
+
+	pkg, err := repo.OpenPackage("testpackage")
+
+	test.CheckError(err, t)
+
 }

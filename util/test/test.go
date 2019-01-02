@@ -22,6 +22,11 @@ func GetTestRootPath() string {
 	return path.Join(GetGoWorkspacePath(), "evius-test", "gen", "gogen")
 }
 
+// GetTestDataPath returns the root path for test data in the gogen package
+func GetTestDataPath() string {
+	return path.Join(GetGoWorkspacePath(), "evius", "test-data", "gen", "gogen")
+}
+
 // Setup performs base setup for tests, creating test directory
 func Setup(testName string, t *testing.T) {
 
@@ -39,6 +44,14 @@ func Setup(testName string, t *testing.T) {
 // Teardown performs base teardown for test, removing test directory and all contents
 func Teardown(testName string, t *testing.T) {
 	if err := directory.RemoveAll(GetTestPath(testName)); err != nil {
+		t.Error(err)
+	}
+}
+
+// CheckError checks if there is an error and logs/fails the test with error
+func CheckError(err error, t *testing.T) {
+
+	if err != nil {
 		t.Error(err)
 	}
 }

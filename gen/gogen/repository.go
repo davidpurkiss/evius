@@ -18,14 +18,25 @@ func (repository Repository) CreatePackage(name string) (*Package, error) {
 	if directory.Exists(packagePath) {
 		return &Package{}, fmt.Errorf("The package '%s' already exists", name)
 	}
-	pckg, _ := OpenPackage(packagePath)
-	return pckg, directory.Create(pckg.path)
+
+	if err := directory.Create(packagePath); err != nil {
+		return nil, err
+	}
+
+	pckg, err := OpenPackage(packagePath)
+	return pckg, err
 }
 
 // OpenPackage opens an existing package in a go repository
-func (repository Repository) OpenPackage(path string) (*Package, error) {
-	pckg, _ := OpenPackage(path)
-	return pckg, directory.Create(pckg.path)
+func (repository Repository) OpenPackage(name string) (*Package, error) {
+	packagePath := path.Join(repository.path, name)
+	pckg, err := OpenPackage(packagePath)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return pckg, nil
 }
 
 // RemovePackage removes an existing package from the go repository

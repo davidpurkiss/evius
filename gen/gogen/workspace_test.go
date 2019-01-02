@@ -42,6 +42,10 @@ func TestCreateRepo(t *testing.T) {
 	teardownWorkspaceTest(t)
 }
 
+func TestOpenRepo(t *testing.T) {
+	t.Fail()
+}
+
 func TestRemoveRepo(t *testing.T) {
 
 	setupWorkspaceTest(t)
