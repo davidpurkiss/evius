@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/printer"
+	"go/token"
 	"os"
 )
 
@@ -28,7 +29,7 @@ func OpenFile(path string, pkg *Package, astFile *ast.File) *File {
 // Save writes the current ast to disk
 func (file *File) Save() error {
 
-	f, _ := os.Open(file.path)
+	f, _ := os.OpenFile(file.path, os.O_RDWR, 0755)
 	defer f.Close()
 	if err := printer.Fprint(f, file.pkg._fset, file._file); err != nil {
 		return err
@@ -42,7 +43,7 @@ func (file *File) AddType(name string, description string, baseTypeName string) 
 	newType := NewType(name, description, baseTypeName)
 	file.types = append(file.types, newType)
 
-	decl := &ast.GenDecl{Specs: []ast.Spec{newType._type}}
+	decl := &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{newType._type}}
 	file._file.Decls = append(file._file.Decls, decl)
 
 	return newType, nil

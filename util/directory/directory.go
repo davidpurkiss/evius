@@ -16,6 +16,11 @@ func Remove(path string) error {
 	return os.Remove(path)
 }
 
+// RemoveAll removes an existing directory and all its contents
+func RemoveAll(path string) error {
+	return os.RemoveAll(path)
+}
+
 // Rename renames an existing directory
 func Rename(oldPath string, newPath string) error {
 	return os.Rename(oldPath, newPath)

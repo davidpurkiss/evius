@@ -1,7 +1,7 @@
 package gogen
 
 import (
-	"evius/util"
+	"evius/util/directory"
 	"fmt"
 	"go/ast"
 	"go/parser"
