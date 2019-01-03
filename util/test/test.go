@@ -49,9 +49,12 @@ func Teardown(testName string, t *testing.T) {
 }
 
 // CheckError checks if there is an error and logs/fails the test with error
-func CheckError(err error, t *testing.T) {
+func CheckError(err error, t *testing.T) bool {
 
 	if err != nil {
 		t.Error(err)
+		return false
 	}
+
+	return true
 }

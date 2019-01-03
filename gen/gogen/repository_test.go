@@ -3,11 +3,12 @@ package gogen
 import (
 	"evius/util/directory"
 	"evius/util/test"
+	"path"
 	"testing"
 )
 
 func getRepositoryTestName() string {
-	return "repository"
+	return "testrepo"
 }
 
 func setupRepositoryTest(t *testing.T) {
@@ -89,7 +90,7 @@ func TestRenamePackage(t *testing.T) {
 
 func TestOpenPackage(t *testing.T) {
 
-	workspace := Workspace{name: "Test", path: test.GetTestDataPath()}
+	workspace := Workspace{name: "Test", path: path.Join(test.GetTestDataPath(), "repository")}
 	repo, err := workspace.OpenRepository(getRepositoryTestName())
 
 	test.CheckError(err, t)
@@ -97,5 +98,11 @@ func TestOpenPackage(t *testing.T) {
 	pkg, err := repo.OpenPackage("testpackage")
 
 	test.CheckError(err, t)
+
+	if pkg != nil {
+		if len(pkg.files) != 2 {
+			t.Error("Expected 2 files")
+		}
+	}
 
 }

@@ -43,7 +43,17 @@ func TestCreateRepo(t *testing.T) {
 }
 
 func TestOpenRepo(t *testing.T) {
-	t.Fail()
+
+	workspace := Workspace{name: "Test", path: path.Join(test.GetTestDataPath(), "repository")}
+	repo, err := workspace.OpenRepository("testrepo")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if repo.path != path.Join(workspace.path, "testrepo") {
+		t.Fail()
+	}
 }
 
 func TestRemoveRepo(t *testing.T) {

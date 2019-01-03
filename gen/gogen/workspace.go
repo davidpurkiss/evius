@@ -13,28 +13,35 @@ type Workspace struct {
 }
 
 // CreateWorkspace creates a new go workspace
-func (workspace Workspace) CreateWorkspace() (Workspace, error) {
+func (workspace *Workspace) CreateWorkspace() (*Workspace, error) {
 
 	return workspace, directory.Create(workspace.path)
 }
 
 // CreateRepository creates a new repository in the go workspace
-func (workspace Workspace) CreateRepository(name string) (Repository, error) {
+func (workspace Workspace) CreateRepository(name string) (*Repository, error) {
 
 	repoPath := path.Join(workspace.path, name)
 	if directory.Exists(repoPath) {
-		return Repository{}, fmt.Errorf("The repo '%s' already exists", name)
+		return &Repository{}, fmt.Errorf("The repo '%s' already exists", name)
 	}
-	repo := Repository{name: name, path: repoPath}
+	repo := &Repository{name: name, path: repoPath}
 	return repo, directory.Create(repo.path)
 }
 
-func (workspace Workspace) OpenRepository(name string) (Repository, error) {
+// OpenRepository opens an existing repository
+func (workspace *Workspace) OpenRepository(name string) (*Repository, error) {
 
+	repoPath := path.Join(workspace.path, name)
+	if !directory.Exists(repoPath) {
+		return nil, fmt.Errorf("The repo '%s' does not exist", name)
+	}
+
+	return &Repository{name: name, path: repoPath}, nil
 }
 
 // RemoveRepository removes an existing repository from the go workspace
-func (workspace Workspace) RemoveRepository(name string) error {
+func (workspace *Workspace) RemoveRepository(name string) error {
 
 	repoPath := path.Join(workspace.path, name)
 	if !directory.Exists(repoPath) {
