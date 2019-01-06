@@ -32,7 +32,7 @@ func TestCreatePackage(t *testing.T) {
 
 	test.CheckError(err, t)
 
-	pkg, err := repo.CreatePackage("test-package")
+	pkg, err := repo.CreatePackage("testpackage")
 
 	test.CheckError(err, t)
 

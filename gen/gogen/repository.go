@@ -2,6 +2,7 @@ package gogen
 
 import (
 	"evius/util/directory"
+	"evius/util/stringutil"
 	"fmt"
 	"path"
 )
@@ -14,6 +15,11 @@ type Repository struct {
 
 // CreatePackage creates a new package in a go repository
 func (repository Repository) CreatePackage(name string) (*Package, error) {
+
+	if stringutil.ContainsSpecialCharacters(name) {
+		return nil, fmt.Errorf("The package name '%s' cannot contain special characters", name)
+	}
+
 	packagePath := path.Join(repository.path, name)
 	if directory.Exists(packagePath) {
 		return &Package{}, fmt.Errorf("The package '%s' already exists", name)

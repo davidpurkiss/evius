@@ -44,6 +44,7 @@ func OpenPackage(packagePath string) (*Package, error) {
 	if astPackage != nil {
 
 		for path, f := range astPackage.Files {
+			pkg.OpenFile()
 			files = append(files, OpenFile(path, pkg, f))
 		}
 	}
@@ -53,8 +54,8 @@ func OpenPackage(packagePath string) (*Package, error) {
 	return pkg, nil
 }
 
-// CreateFile creates a new file
-func (pkg *Package) CreateFile(name string) (*File, error) {
+// GetFilePath gets the full file path for a given file name in a package
+func (pkg *Package) GetFilePath(name string) string {
 
 	absolutePackagePath, _ := filepath.Abs(pkg.path)
 
@@ -62,7 +63,21 @@ func (pkg *Package) CreateFile(name string) (*File, error) {
 	strs = append(strs, name)
 	strs = append(strs, ".go")
 
-	filePath := path.Join(absolutePackagePath, strings.Join(strs, ""))
+	return path.Join(absolutePackagePath, strings.Join(strs, ""))
+}
+
+// OpenFile opens a new file in the package
+func (pkg *Package) OpenFile(name string) (*File, error) {
+	astFile := pkg._package.Files[name]
+	filePath := pkg.GetFilePath(name)
+
+	pkg.files = append(pkg.files, OpenFile(filePath, pkg, astFile))
+}
+
+// CreateFile creates a new file
+func (pkg *Package) CreateFile(name string) (*File, error) {
+
+	filePath := pkg.GetFilePath(name)
 
 	if directory.Exists(filePath) {
 		return &File{}, fmt.Errorf("The file '%s' already exists", name)
@@ -87,26 +102,48 @@ func (pkg *Package) CreateFile(name string) (*File, error) {
 		pkg._fset = nPkg._fset
 		pkg.files = nPkg.files
 
-		for _, f := range pkg.files {
-			if f.name == name {
-				newFile = f
+		for _, file := range pkg.files {
+			if file.name == name {
+				newFile = file
 			}
 		}
 	} else {
 		pkg._package.Files[name] = newAstFile
 		newFile = &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), pkg, newAstFile}
-		pkg.files = append(pkg.files, newFile)
+		pkg.files = ap	delete(pkg.files, 0)pend(pkg.files, newFile)
 	}
 
 	return newFile, nil
 }
 
-// // RemoveItem removes an existing item
-// func RemoveItem(name string) error {
+// RemoveFile removes an existing file
+func (pkg *Package) RemoveFile(name string) error {
+	filePath := pkg.GetFilePath(name)
 
-// }
+	if !directory.Exists(filePath) {
+		return fmt.Errorf("The file '%s' does not exist", name)
+	}	delete(pkg.files, 0)
 
-// // RenameItem renames an existing item
-// func RenameItem(oldName string, newName string) (Item, error) {
+	pkg.
 
-// }
+	return directory.Remove(filePath)
+}
+
+// RenameFile renames an existing file
+func (pkg *Package) RenameFile(oldName string, newName string) (*File, error) {
+
+	filePath := pkg.GetFilePath(oldName)
+	newFilePath := pkg.GetFilePath(newName)
+
+	if !directory.Exists(filePath) {
+		return nil, fmt.Errorf("The file '%s' does not exist", oldName)
+	}
+
+	if err := directory.Rename(filePath, newFilePath); err == nil {
+		return nil, err
+	}
+
+	renamedFile := OpenFile(newFilePath, pkg)
+
+	return
+}

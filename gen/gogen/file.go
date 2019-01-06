@@ -6,6 +6,8 @@ import (
 	"go/printer"
 	"go/token"
 	"os"
+	"path"
+	"strings"
 )
 
 // File defines the attributes of a go file (or code item)
@@ -21,9 +23,12 @@ type File struct {
 }
 
 // OpenFile initializes a new file from a ast.File instance
-func OpenFile(path string, pkg *Package, astFile *ast.File) *File {
+func OpenFile(filePath string, pkg *Package, astFile *ast.File) *File {
 
-	return &File{astFile.Name.String(), path, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), pkg, astFile}
+	_, name := path.Split(filePath)
+	name = strings.Replace(name, path.Ext(name), "", 1)
+
+	return &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), pkg, astFile}
 }
 
 // Save writes the current ast to disk
