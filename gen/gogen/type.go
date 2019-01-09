@@ -1,6 +1,7 @@
 package gogen
 
 import (
+	"fmt"
 	"go/ast"
 	"reflect"
 )
@@ -16,9 +17,9 @@ type Type struct {
 func NewType(name string, description string, baseTypeName string) *Type {
 
 	var cg *ast.CommentGroup
-	if description == "" {
+	if description != "" {
 		cg = &ast.CommentGroup{
-			List: []*ast.Comment{&ast.Comment{Text: description}},
+			List: []*ast.Comment{&ast.Comment{Text: fmt.Sprint("// ", description), Slash: 0}},
 		}
 	}
 
@@ -27,14 +28,37 @@ func NewType(name string, description string, baseTypeName string) *Type {
 	return &Type{name: name, description: description, _type: typeSpec}
 }
 
+// SetName sets or changes the name of a Type
+func (tpe *Type) SetName(name string) {
+	tpe._type.Name = ast.NewIdent(name)
+}
+
 // Name returns the name of the type
 func (tpe *Type) Name() string {
 	return tpe.name
 }
 
+// SetDescription sets or changes the description of the type
+func (tpe *Type) SetDescription(description string) {
+	var cg *ast.CommentGroup
+
+	if description != "" {
+		cg = &ast.CommentGroup{
+			List: []*ast.Comment{&ast.Comment{Slash: 0, Text: description}},
+		}
+	}
+
+	tpe._type.Doc = cg
+}
+
 // Description returns the description of the type
 func (tpe *Type) Description() string {
 	return tpe.description
+}
+
+// SetType sets or changes the type name of the type
+func (tpe *Type) SetType(baseTypeName string) {
+	tpe._type.Type = ast.NewIdent(baseTypeName)
 }
 
 // Type returns the type name

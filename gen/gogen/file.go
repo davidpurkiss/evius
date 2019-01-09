@@ -20,6 +20,7 @@ type File struct {
 	functions  []*Func
 	pkg        *Package
 	_file      *ast.File
+	_typeDecls map[string]*ast.GenDecl
 }
 
 // NewFile initializes a new file from a ast.File instance
@@ -28,7 +29,7 @@ func NewFile(filePath string, pkg *Package, astFile *ast.File) *File {
 	_, name := path.Split(filePath)
 	name = strings.Replace(name, path.Ext(name), "", 1)
 
-	return &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), pkg, astFile}
+	return &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), pkg, astFile, make(map[string]*ast.GenDecl, 0)}
 }
 
 // Save writes the current ast to disk
@@ -43,15 +44,73 @@ func (file *File) Save() error {
 	return nil
 }
 
+// GetType retrieves an existing type from the file using its name
+func (file *File) GetType(name string) *Type {
+	for _, typ := range file.types {
+		if typ.name == name {
+			return typ
+		}
+	}
+
+	return nil
+}
+
 // AddType adds a new type to the file
 func (file *File) AddType(name string, description string, baseTypeName string) (*Type, error) {
+
+	if existingType := file.GetType(name); existingType != nil {
+		return nil, fmt.Errorf("The type '%s' already exists", name)
+	}
+
 	newType := NewType(name, description, baseTypeName)
 	file.types = append(file.types, newType)
 
 	decl := &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{newType._type}}
 	file._file.Decls = append(file._file.Decls, decl)
+	file._typeDecls[name] = decl
+
+	file.Save()
 
 	return newType, nil
+}
+
+// RenameType renames an existing type using its old name
+func (file *File) RenameType(oldName string, newName string) {
+	typ := file.GetType(oldName)
+
+	typ.name = newName
+	typ.SetName(newName)
+
+	file.Save()
+}
+
+// RemoveType renames an existing type using its old name
+func (file *File) RemoveType(name string) error {
+	if existingType := file.GetType(name); existingType == nil {
+		return fmt.Errorf("The type '%s' does not exist", name)
+	}
+
+	decl := file._typeDecls[name]
+
+	if decl == nil {
+		return fmt.Errorf("No declaration was found for type '%s'", name)
+	}
+
+	// Remove the Delcaration from the ast
+	for i, d := range file._file.Decls {
+		if d == decl {
+			file._file.Decls = append(file._file.Decls[:i], file._file.Decls[i+1:]...)
+		}
+	}
+
+	// Remove the file from the file types
+	for i, t := range file.types {
+		if t.name == name {
+			file.types = append(file.types[:i], file.types[i+1:]...)
+		}
+	}
+
+	return nil
 }
 
 // AddStruct adds a new struct to the file
@@ -67,11 +126,6 @@ func (file *File) AddInterface(name string, description string) (*Interface, err
 // AddFunction adds a new function to the file
 func (file *File) AddFunction(name string, description string) (*Func, error) {
 	return nil, fmt.Errorf("Function not implemented")
-}
-
-// RemoveType removes a type from the file
-func (file *File) RemoveType(*Type) error {
-	return fmt.Errorf("Function not implemented")
 }
 
 // RemoveStruct removes a struct from the file
