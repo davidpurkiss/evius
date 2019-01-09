@@ -44,8 +44,7 @@ func OpenPackage(packagePath string) (*Package, error) {
 	if astPackage != nil {
 
 		for path, f := range astPackage.Files {
-			pkg.OpenFile()
-			files = append(files, OpenFile(path, pkg, f))
+			files = append(files, NewFile(path, pkg, f))
 		}
 	}
 
@@ -71,7 +70,10 @@ func (pkg *Package) OpenFile(name string) (*File, error) {
 	astFile := pkg._package.Files[name]
 	filePath := pkg.GetFilePath(name)
 
-	pkg.files = append(pkg.files, OpenFile(filePath, pkg, astFile))
+	file := NewFile(filePath, pkg, astFile)
+	pkg.files = append(pkg.files, file)
+
+	return file, nil
 }
 
 // CreateFile creates a new file
@@ -110,10 +112,21 @@ func (pkg *Package) CreateFile(name string) (*File, error) {
 	} else {
 		pkg._package.Files[name] = newAstFile
 		newFile = &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), pkg, newAstFile}
-		pkg.files = ap	delete(pkg.files, 0)pend(pkg.files, newFile)
+		pkg.files = append(pkg.files, newFile)
 	}
 
 	return newFile, nil
+}
+
+// GetFile retrieves an existing and open file from the package
+func (pkg *Package) GetFile(name string) *File {
+	for _, file := range pkg.files {
+		if file.name == name {
+			return file
+		}
+	}
+
+	return nil
 }
 
 // RemoveFile removes an existing file
@@ -122,9 +135,14 @@ func (pkg *Package) RemoveFile(name string) error {
 
 	if !directory.Exists(filePath) {
 		return fmt.Errorf("The file '%s' does not exist", name)
-	}	delete(pkg.files, 0)
+	}
 
-	pkg.
+	for index, file := range pkg.files {
+		if file.name == name {
+			pkg.files = append(pkg.files[:index], pkg.files[index+1:]...)
+			break
+		}
+	}
 
 	return directory.Remove(filePath)
 }
@@ -139,11 +157,14 @@ func (pkg *Package) RenameFile(oldName string, newName string) (*File, error) {
 		return nil, fmt.Errorf("The file '%s' does not exist", oldName)
 	}
 
-	if err := directory.Rename(filePath, newFilePath); err == nil {
+	file := pkg.GetFile(oldName)
+
+	if err := directory.Rename(filePath, newFilePath); err != nil {
 		return nil, err
 	}
 
-	renamedFile := OpenFile(newFilePath, pkg)
+	file.name = newName
+	file.path = newFilePath
 
-	return
+	return file, nil
 }

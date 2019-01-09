@@ -22,8 +22,8 @@ type File struct {
 	_file      *ast.File
 }
 
-// OpenFile initializes a new file from a ast.File instance
-func OpenFile(filePath string, pkg *Package, astFile *ast.File) *File {
+// NewFile initializes a new file from a ast.File instance
+func NewFile(filePath string, pkg *Package, astFile *ast.File) *File {
 
 	_, name := path.Split(filePath)
 	name = strings.Replace(name, path.Ext(name), "", 1)

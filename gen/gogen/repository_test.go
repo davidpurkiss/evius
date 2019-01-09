@@ -51,7 +51,7 @@ func TestRemovePackage(t *testing.T) {
 	repo, err := workspace.CreateRepository("test-repo")
 	test.CheckError(err, t)
 
-	pkg, err := repo.CreatePackage("test-package")
+	pkg, err := repo.CreatePackage("testpackage")
 
 	test.CheckError(err, t)
 
@@ -72,16 +72,16 @@ func TestRenamePackage(t *testing.T) {
 	repo, err := workspace.CreateRepository("test-repo")
 	test.CheckError(err, t)
 
-	pkg, err := repo.CreatePackage("test-package")
+	pkg, err := repo.CreatePackage("testpackage")
 	test.CheckError(err, t)
 
-	repo.RenamePackage(pkg.name, "test-package-renamed")
+	repo.RenamePackage(pkg.name, "testpackagerenamed")
 
 	if directory.Exists(pkg.name) {
 		t.Fail()
 	}
 
-	if directory.Exists("test-package") {
+	if directory.Exists("testpackage") {
 		t.Fail()
 	}
 

@@ -71,9 +71,15 @@ func TestRemoveFile(t *testing.T) {
 
 	test.CheckError(err, t)
 
-	test.CheckError(repo.RemovePackage(pkg.name), t)
+	_, err = pkg.CreateFile("test1")
 
-	if directory.Exists(pkg.path) {
+	test.CheckError(err, t)
+
+	err = pkg.RemoveFile("test1")
+
+	test.CheckError(err, t)
+
+	if len(pkg.files) != 0 {
 		t.Fail()
 	}
 
@@ -88,16 +94,36 @@ func TestRenameFile(t *testing.T) {
 	repo, err := workspace.CreateRepository("test-repo")
 	test.CheckError(err, t)
 
-	pkg, err := repo.CreatePackage("test-package")
+	pkg, err := repo.CreatePackage("testpackage")
+
 	test.CheckError(err, t)
 
-	repo.RenamePackage(pkg.name, "test-package-renamed")
+	file, err := pkg.CreateFile("test1")
 
-	if directory.Exists(pkg.name) {
+	test.CheckError(err, t)
+
+	file1Path := pkg.GetFilePath("test1")
+	file2Path := pkg.GetFilePath("test2")
+
+	_, err = pkg.RenameFile("test1", "test2")
+
+	if directory.Exists(file1Path) {
 		t.Fail()
 	}
 
-	if directory.Exists("test-package") {
+	if !directory.Exists(file2Path) {
+		t.Fail()
+	}
+
+	if testFile := pkg.GetFile("test1"); testFile != nil {
+		t.Fail()
+	}
+
+	if testFile := pkg.GetFile("test2"); testFile == nil {
+		t.Fail()
+	}
+
+	if file.name != "test2" && file.path != file2Path {
 		t.Fail()
 	}
 
@@ -107,7 +133,7 @@ func TestRenameFile(t *testing.T) {
 func TestOpenFile(t *testing.T) {
 
 	workspace := Workspace{name: "Test", path: path.Join(test.GetTestDataPath(), "repository")}
-	repo, err := workspace.OpenRepository(getPackageTestName())
+	repo, err := workspace.OpenRepository("testrepo")
 
 	test.CheckError(err, t)
 
