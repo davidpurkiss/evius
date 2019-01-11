@@ -3,8 +3,7 @@ package gogen
 import (
 	"fmt"
 	"go/ast"
-	"go/printer"
-	"go/token"
+	"go/format"
 	"os"
 	"path"
 	"strings"
@@ -20,7 +19,6 @@ type File struct {
 	functions  []*Func
 	pkg        *Package
 	_file      *ast.File
-	_typeDecls map[string]*ast.GenDecl
 }
 
 // NewFile initializes a new file from a ast.File instance
@@ -29,7 +27,7 @@ func NewFile(filePath string, pkg *Package, astFile *ast.File) *File {
 	_, name := path.Split(filePath)
 	name = strings.Replace(name, path.Ext(name), "", 1)
 
-	return &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), pkg, astFile, make(map[string]*ast.GenDecl, 0)}
+	return &File{name, filePath, make([]*Type, 0), make([]*Struct, 0), make([]*Interface, 0), make([]*Func, 0), pkg, astFile}
 }
 
 // Save writes the current ast to disk
@@ -37,7 +35,7 @@ func (file *File) Save() error {
 
 	f, _ := os.OpenFile(file.path, os.O_RDWR, 0755)
 	defer f.Close()
-	if err := printer.Fprint(f, file.pkg._fset, file._file); err != nil {
+	if err := format.Node(f, file.pkg._fset, file._file); err != nil {
 		return err
 	}
 
@@ -62,12 +60,10 @@ func (file *File) AddType(name string, description string, baseTypeName string) 
 		return nil, fmt.Errorf("The type '%s' already exists", name)
 	}
 
-	newType := NewType(name, description, baseTypeName)
+	newType := NewType(name, description, baseTypeName, file)
 	file.types = append(file.types, newType)
 
-	decl := &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{newType._type}}
-	file._file.Decls = append(file._file.Decls, decl)
-	file._typeDecls[name] = decl
+	file._file.Decls = append(file._file.Decls, newType._decl)
 
 	file.Save()
 
@@ -75,30 +71,34 @@ func (file *File) AddType(name string, description string, baseTypeName string) 
 }
 
 // RenameType renames an existing type using its old name
-func (file *File) RenameType(oldName string, newName string) {
+func (file *File) RenameType(oldName string, newName string) error {
+
+	existingType := file.GetType(oldName)
+
+	if existingType == nil {
+		return fmt.Errorf("The type '%s' does not exist", oldName)
+	}
+
 	typ := file.GetType(oldName)
 
 	typ.name = newName
 	typ.SetName(newName)
 
-	file.Save()
+	return file.Save()
 }
 
 // RemoveType renames an existing type using its old name
 func (file *File) RemoveType(name string) error {
-	if existingType := file.GetType(name); existingType == nil {
+
+	existingType := file.GetType(name)
+
+	if existingType == nil {
 		return fmt.Errorf("The type '%s' does not exist", name)
-	}
-
-	decl := file._typeDecls[name]
-
-	if decl == nil {
-		return fmt.Errorf("No declaration was found for type '%s'", name)
 	}
 
 	// Remove the Delcaration from the ast
 	for i, d := range file._file.Decls {
-		if d == decl {
+		if d == existingType._decl {
 			file._file.Decls = append(file._file.Decls[:i], file._file.Decls[i+1:]...)
 		}
 	}
