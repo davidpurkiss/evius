@@ -113,9 +113,31 @@ func (file *File) RemoveType(name string) error {
 	return nil
 }
 
+// GetStruct retrieves an existing struct from the file using its name
+func (file *File) GetStruct(name string) *Struct {
+	for _, s := range file.structs {
+		if s.name == name {
+			return s
+		}
+	}
+
+	return nil
+}
+
 // AddStruct adds a new struct to the file
 func (file *File) AddStruct(name string, description string) (*Struct, error) {
-	return nil, fmt.Errorf("Function not implemented")
+	if existingStruct := file.GetStruct(name); existingStruct != nil {
+		return nil, fmt.Errorf("The struct '%s' already exists", name)
+	}
+
+	newStruct := NewStruct(name, description, file)
+	file.structs = append(file.structs, newStruct)
+
+	file._file.Decls = append(file._file.Decls, newStruct._decl)
+
+	file.Save()
+
+	return newStruct, nil
 }
 
 // AddInterface adds a new struct to the file

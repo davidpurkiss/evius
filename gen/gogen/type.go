@@ -1,7 +1,6 @@
 package gogen
 
 import (
-	"fmt"
 	"go/ast"
 	"go/token"
 	"reflect"
@@ -19,12 +18,7 @@ type Type struct {
 // NewType creates a new Type ready for population
 func NewType(name string, description string, baseTypeName string, file *File) *Type {
 
-	var cg *ast.CommentGroup
-	if description != "" {
-		cg = &ast.CommentGroup{
-			List: []*ast.Comment{&ast.Comment{Text: fmt.Sprint("// ", description), Slash: 0}},
-		}
-	}
+	cg := getCommentGroup(description)
 
 	typeSpec := &ast.TypeSpec{Name: ast.NewIdent(name), Type: ast.NewIdent(baseTypeName)}
 
@@ -48,15 +42,7 @@ func (tpe *Type) Name() string {
 func (tpe *Type) SetDescription(description string) {
 	tpe.description = description
 
-	var cg *ast.CommentGroup
-
-	if description != "" {
-		cg = &ast.CommentGroup{
-			List: []*ast.Comment{&ast.Comment{Slash: 0, Text: fmt.Sprint("// ", description)}},
-		}
-	}
-
-	tpe._decl.Doc = cg
+	tpe._decl.Doc = getCommentGroup(description)
 	tpe.file.Save()
 }
 

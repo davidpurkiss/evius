@@ -84,3 +84,52 @@ func TestFile_RenameType(t *testing.T) {
 
 	teardownFileTest(t)
 }
+
+func TestFile_RemoveType(t *testing.T) {
+	setupFileTest(t)
+
+	workspace := Workspace{name: "Test", path: getFileTestPath()}
+	repo, _ := workspace.CreateRepository("test-repo")
+	pkg, _ := repo.CreatePackage("testpackage")
+	file, _ := pkg.CreateFile("test1")
+
+	typeName, typeDescription := "Test", "This is a test description"
+
+	_, err := file.AddType(typeName, typeDescription, "string")
+
+	test.CheckError(err, t)
+
+	err = file.RemoveType(typeName)
+
+	test.CheckError(err, t)
+
+	if len(file.types) != 0 {
+		t.Fail()
+	}
+
+	teardownFileTest(t)
+}
+
+func TestFile_AddStruct(t *testing.T) {
+	setupFileTest(t)
+
+	workspace := Workspace{name: "Test", path: getFileTestPath()}
+	repo, _ := workspace.CreateRepository("test-repo")
+	pkg, _ := repo.CreatePackage("testpackage")
+	file, _ := pkg.CreateFile("test1")
+
+	structName, structDescription := "Test", "This is a test description"
+
+	strct, err := file.AddStruct(structName, structDescription)
+
+	test.CheckError(err, t)
+
+	if strct.name != structName {
+		t.Fail()
+	}
+	if strct.description != structDescription {
+		t.Fail()
+	}
+
+	teardownFileTest(t)
+}
