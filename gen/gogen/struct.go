@@ -1,6 +1,7 @@
 package gogen
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"reflect"
@@ -36,6 +37,35 @@ func NewStruct(name string, description string, file *File) *Struct {
 	decl := &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{typeSpec}, Doc: cg}
 
 	return &Struct{name: name, description: description, fields: make([]*StructField, 0), file: file, _structType: structType, _type: typeSpec, _decl: decl}
+}
+
+// GetField retrieves an existing field from the struct using its name
+func (strct *Struct) GetField(name string) *StructField {
+	for _, f := range strct.fields {
+		if f.name == name {
+			return f
+		}
+	}
+
+	return nil
+}
+
+// AddField adds a new field to the struct
+func (strct *Struct) AddField(name string, typeName string, description string) (*StructField, error) {
+
+	if existingStructField := strct.GetField(name); existingStructField != nil {
+		return nil, fmt.Errorf("The field '%s' already exists", name)
+	}
+
+	astField := &ast.Field{Names: []*ast.Ident{ast.NewIdent(name)}, Type: ast.NewIdent(typeName), Comment: getCommentGroup(description)}
+	field := &StructField{name: name, typeName: typeName, description: description, _field: astField}
+
+	strct.fields = append(strct.fields, field)
+	strct._structType.Fields.List = append(strct._structType.Fields.List, field._field)
+
+	strct.file.Save()
+
+	return field, nil
 }
 
 // SetName sets or changes the name of a Struct
