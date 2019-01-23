@@ -8,11 +8,12 @@ import (
 
 // Type represents a custom go type and defines its attributes
 type Type struct {
-	name        string
-	description string
-	file        *File
-	_type       *ast.TypeSpec
-	_decl       *ast.GenDecl
+	name         string
+	description  string
+	baseTypeName string
+	file         *File
+	_type        *ast.TypeSpec
+	_decl        *ast.GenDecl
 }
 
 // NewType creates a new Type ready for population
@@ -24,12 +25,14 @@ func NewType(name string, description string, baseTypeName string, file *File) *
 
 	decl := &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{typeSpec}, Doc: cg}
 
-	return &Type{name: name, description: description, file: file, _type: typeSpec, _decl: decl}
+	return &Type{name: name, description: description, baseTypeName: baseTypeName, file: file, _type: typeSpec, _decl: decl}
 }
 
 // SetName sets or changes the name of a Type
 func (tpe *Type) SetName(name string) {
+	tpe.name = name
 	tpe._type.Name = ast.NewIdent(name)
+
 	tpe.file.Save()
 }
 
@@ -43,6 +46,7 @@ func (tpe *Type) SetDescription(description string) {
 	tpe.description = description
 
 	tpe._decl.Doc = getCommentGroup(description)
+
 	tpe.file.Save()
 }
 
@@ -53,7 +57,9 @@ func (tpe *Type) Description() string {
 
 // SetType sets or changes the type name of the type
 func (tpe *Type) SetType(baseTypeName string) {
+	tpe.baseTypeName = baseTypeName
 	tpe._type.Type = ast.NewIdent(baseTypeName)
+
 	tpe.file.Save()
 }
 

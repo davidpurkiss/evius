@@ -7,14 +7,6 @@ import (
 	"reflect"
 )
 
-// StructField represents a field within a go struct
-type StructField struct {
-	name        string
-	description string
-	typeName    string
-	_field      *ast.Field
-}
-
 // Struct represents a go struct and defines its attributes
 type Struct struct {
 	name        string
@@ -57,12 +49,9 @@ func (strct *Struct) AddField(name string, typeName string, description string) 
 		return nil, fmt.Errorf("The field '%s' already exists", name)
 	}
 
-	astField := &ast.Field{Names: []*ast.Ident{ast.NewIdent(name)}, Type: ast.NewIdent(typeName), Comment: getCommentGroup(description)}
-	field := &StructField{name: name, typeName: typeName, description: description, _field: astField}
-
+	field := NewStructField(name, typeName, description, strct.file)
 	strct.fields = append(strct.fields, field)
 	strct._structType.Fields.List = append(strct._structType.Fields.List, field._field)
-
 	strct.file.Save()
 
 	return field, nil
@@ -70,6 +59,7 @@ func (strct *Struct) AddField(name string, typeName string, description string) 
 
 // SetName sets or changes the name of a Struct
 func (strct *Struct) SetName(name string) {
+	strct.name = name
 	strct._type.Name = ast.NewIdent(name)
 	strct.file.Save()
 }
@@ -79,7 +69,7 @@ func (strct *Struct) Name() string {
 	return strct.name
 }
 
-// Description returns the description of the type
+// Description returns the description of the Struct
 func (strct *Struct) Description() string {
 	return strct.description
 }
