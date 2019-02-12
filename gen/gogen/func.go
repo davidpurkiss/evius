@@ -1,11 +1,20 @@
 package gogen
 
-import "reflect"
+import (
+	"go/ast"
+	"reflect"
+)
 
 // Func represents a go func and defines its attributes
 type Func struct {
 	name        string
 	description string
+	receiver    *Field
+	params      []*Field
+	results     []*Field
+	file        *File
+	_decl       *ast.FuncDecl
+	_body       *ast.BlockStmt
 }
 
 // Name returns the name of the function

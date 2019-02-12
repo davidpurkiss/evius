@@ -11,7 +11,7 @@ import (
 type Struct struct {
 	name        string
 	description string
-	fields      []*StructField
+	fields      []*Field
 	file        *File
 	_structType *ast.StructType
 	_type       *ast.TypeSpec
@@ -28,11 +28,11 @@ func NewStruct(name string, description string, file *File) *Struct {
 
 	decl := &ast.GenDecl{Tok: token.TYPE, Specs: []ast.Spec{typeSpec}, Doc: cg}
 
-	return &Struct{name: name, description: description, fields: make([]*StructField, 0), file: file, _structType: structType, _type: typeSpec, _decl: decl}
+	return &Struct{name: name, description: description, fields: make([]*Field, 0), file: file, _structType: structType, _type: typeSpec, _decl: decl}
 }
 
 // GetField retrieves an existing field from the struct using its name
-func (strct *Struct) GetField(name string) *StructField {
+func (strct *Struct) GetField(name string) *Field {
 	for _, f := range strct.fields {
 		if f.name == name {
 			return f
@@ -43,13 +43,13 @@ func (strct *Struct) GetField(name string) *StructField {
 }
 
 // AddField adds a new field to the struct
-func (strct *Struct) AddField(name string, typeName string, description string) (*StructField, error) {
+func (strct *Struct) AddField(name string, typeName string, description string) (*Field, error) {
 
 	if existingStructField := strct.GetField(name); existingStructField != nil {
 		return nil, fmt.Errorf("The field '%s' already exists", name)
 	}
 
-	field := NewStructField(name, typeName, description, strct.file)
+	field := NewField(name, typeName, description, strct.file)
 	strct.fields = append(strct.fields, field)
 	strct._structType.Fields.List = append(strct._structType.Fields.List, field._field)
 	strct.file.Save()
