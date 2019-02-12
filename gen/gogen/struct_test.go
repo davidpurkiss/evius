@@ -39,15 +39,25 @@ func TestStruct_AddField(t *testing.T) {
 
 	field, err := strct.AddField(fieldName, fieldType, fieldDescription)
 
-	_, err = strct.AddField(fieldName2, fieldType2, fieldDescription2)
+	field2, err := strct.AddField(fieldName2, fieldType2, fieldDescription2)
 
-	if field.name != structName {
+	if field.name != fieldName {
 		t.Fail()
 	}
-	if field.description != structDescription {
+	if field.description != fieldDescription {
 		t.Fail()
 	}
 	if field.typeName != fieldType {
+		t.Fail()
+	}
+
+	if field2.name != fieldName2 {
+		t.Fail()
+	}
+	if field2.description != fieldDescription2 {
+		t.Fail()
+	}
+	if field2.typeName != fieldType2 {
 		t.Fail()
 	}
 	teardownStructTest(t)

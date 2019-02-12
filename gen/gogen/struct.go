@@ -57,6 +57,46 @@ func (strct *Struct) AddField(name string, typeName string, description string) 
 	return field, nil
 }
 
+// RenameField renames an existing field using its old name
+func (strct *Struct) RenameField(oldName string, newName string) error {
+	existingStructField := strct.GetField(oldName)
+
+	if existingStructField == nil {
+		return fmt.Errorf("The field '%s' does not exist", oldName)
+	}
+
+	existingStructField.name = newName
+	existingStructField.SetName(newName)
+
+	return strct.file.Save()
+}
+
+// RemoveField removes an existing field from the struct
+func (strct *Struct) RemoveField(name string) error {
+
+	existingStructField := strct.GetField(name)
+
+	if existingStructField == nil {
+		return fmt.Errorf("The field '%s' does not exist", name)
+	}
+
+	// Remove the field from the ast
+	for i, f := range strct._structType.Fields.List {
+		if f == existingStructField._field {
+			strct._structType.Fields.List = append(strct._structType.Fields.List[:i], strct._structType.Fields.List[i+1:]...)
+		}
+	}
+
+	// Remove the field from the struct fields
+	for i, f := range strct.fields {
+		if f.name == name {
+			strct.fields = append(strct.fields[:i], strct.fields[i+1:]...)
+		}
+	}
+
+	return nil
+}
+
 // SetName sets or changes the name of a Struct
 func (strct *Struct) SetName(name string) {
 	strct.name = name

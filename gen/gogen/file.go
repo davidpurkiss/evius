@@ -87,7 +87,7 @@ func (file *File) RenameType(oldName string, newName string) error {
 	return file.Save()
 }
 
-// RemoveType renames an existing type using its old name
+// RemoveType removes a type from the file
 func (file *File) RemoveType(name string) error {
 
 	existingType := file.GetType(name)
@@ -140,19 +140,51 @@ func (file *File) AddStruct(name string, description string) (*Struct, error) {
 	return newStruct, nil
 }
 
-// AddInterface adds a new struct to the file
-func (file *File) AddInterface(name string, description string) (*Interface, error) {
-	return nil, fmt.Errorf("Function not implemented")
-}
+// RenameStruct renames an existing struct using its old name
+func (file *File) RenameStruct(oldName string, newName string) error {
+	existingStruct := file.GetStruct(oldName)
 
-// AddFunction adds a new function to the file
-func (file *File) AddFunction(name string, description string) (*Func, error) {
-	return nil, fmt.Errorf("Function not implemented")
+	if existingStruct == nil {
+		return fmt.Errorf("The struct '%s' does not exist", oldName)
+	}
+
+	strct := file.GetStruct(oldName)
+
+	strct.name = newName
+	strct.SetName(newName)
+
+	return file.Save()
 }
 
 // RemoveStruct removes a struct from the file
-func (file *File) RemoveStruct(*Struct) error {
-	return fmt.Errorf("Function not implemented")
+func (file *File) RemoveStruct(name string) error {
+
+	existingStruct := file.GetStruct(name)
+
+	if existingStruct == nil {
+		return fmt.Errorf("The struct '%s' does not exist", name)
+	}
+
+	// Remove the Delcaration from the ast
+	for i, d := range file._file.Decls {
+		if d == existingStruct._decl {
+			file._file.Decls = append(file._file.Decls[:i], file._file.Decls[i+1:]...)
+		}
+	}
+
+	// Remove the struct from the file structs
+	for i, t := range file.structs {
+		if t.name == name {
+			file.structs = append(file.structs[:i], file.structs[i+1:]...)
+		}
+	}
+
+	return nil
+}
+
+// AddInterface adds a new struct to the file
+func (file *File) AddInterface(name string, description string) (*Interface, error) {
+	return nil, fmt.Errorf("Function not implemented")
 }
 
 // RemoveInterface removes a struct from the file
@@ -160,8 +192,23 @@ func (file *File) RemoveInterface(*Interface) error {
 	return fmt.Errorf("Function not implemented")
 }
 
+// RenameInterface renames an existing interface using its old name
+func (file *File) RenameInterface(oldName string, newName string) error {
+	return fmt.Errorf("Function not implemented")
+}
+
+// AddFunction adds a new function to the file
+func (file *File) AddFunction(name string, description string) (*Func, error) {
+	return nil, fmt.Errorf("Function not implemented")
+}
+
 // RemoveFunction removes a function from the file
 func (file *File) RemoveFunction(*Func) error {
+	return fmt.Errorf("Function not implemented")
+}
+
+// RenameFunction renames an existing function using its old name
+func (file *File) RenameFunction(oldName string, newName string) error {
 	return fmt.Errorf("Function not implemented")
 }
 
