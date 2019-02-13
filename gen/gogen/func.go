@@ -12,6 +12,7 @@ type Func struct {
 	receiver    *Field
 	params      []*Field
 	results     []*Field
+	statements  []*Statement
 	file        *File
 	_decl       *ast.FuncDecl
 	_body       *ast.BlockStmt
