@@ -6,3 +6,7 @@ type Statement interface {
 
 	AsIfStatement() *IfStatement
 }
+
+func (stmt *IfStatement) AsIfStatement() *IfStatement {
+	return stmt
+}

@@ -20,6 +20,7 @@ type Func struct {
 
 // Name returns the name of the function
 func (fnc Func) Name() string {
+
 	return fnc.name
 }
 

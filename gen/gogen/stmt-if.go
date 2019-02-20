@@ -9,7 +9,3 @@ type IfStatement struct {
 func (stmt *IfStatement) Type() string {
 	return stmt.Type()
 }
-
-func (stmt *IfStatement) AsIfStatement() *IfStatement {
-	return stmt
-}
