@@ -2,10 +2,12 @@ package gogen
 
 import "go/ast"
 
+// IfStatement defines an if statement
 type IfStatement struct {
 	_stmt *ast.IfStmt
 }
 
-func (stmt *IfStatement) Type() string {
+// Type returns the type of the statement
+func (stmt *IfStatement) Type() StatementType {
 	return stmt.Type()
 }
