@@ -1,5 +1,5 @@
 # Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+This is a proof of concept (un-finsihed) API for generating Go code. The idea is to use high-level symantics by way of messages (following a CQRS pattern) to generate Go code. 
 
 # Getting Started
 TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
